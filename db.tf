@@ -5,8 +5,8 @@ resource "aws_db_instance" "taskoverflow_database" {
   engine_version         = "14"
   instance_class         = "db.t4g.micro"
   db_name                = "taskoverflow"
-  username               = local.database_username
-  password               = local.database_password
+  username               = var.database_username
+  password               = var.database_password
   parameter_group_name   = "default.postgres14"
   skip_final_snapshot    = true
   vpc_security_group_ids = [aws_security_group.taskoverflow_database.id]

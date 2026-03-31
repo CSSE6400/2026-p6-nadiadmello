@@ -19,10 +19,19 @@ provider "aws" {
   }
 }
 
+variable "database_username" {
+  description = "Username for the RDS database"
+  type        = string
+}
+
+variable "database_password" {
+  description = "Password for the RDS database"
+  type        = string
+  sensitive   = true
+}
+
 locals {
   image             = "ghcr.io/csse6400/taskoverflow:latest"
-  database_username = "administrator"
-  database_password = "VerySecurePassword123XYZ"
 }
 
 data "aws_iam_role" "lab" {

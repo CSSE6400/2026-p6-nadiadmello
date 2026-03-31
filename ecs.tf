@@ -27,7 +27,7 @@ resource "aws_ecs_task_definition" "taskoverflow" {
     "environment": [
       {
         "name": "SQLALCHEMY_DATABASE_URI",
-        "value": "postgresql://${local.database_username}:${local.database_password}@${aws_db_instance.taskoverflow_database.address}:${aws_db_instance.taskoverflow_database.port}/${aws_db_instance.taskoverflow_database.db_name}"
+        "value": "postgresql://${var.database_username}:${var.database_password}@${aws_db_instance.taskoverflow_database.address}:${aws_db_instance.taskoverflow_database.port}/${aws_db_instance.taskoverflow_database.db_name}"
       }
     ],
     "logConfiguration": {
@@ -55,6 +55,12 @@ resource "aws_ecs_service" "taskoverflow" {
     subnets             = data.aws_subnets.private.ids
     security_groups     = [aws_security_group.taskoverflow.id]
     assign_public_ip    = true
+  }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.taskoverflow.arn
+    container_name = "taskoverflow"
+    container_port = 6400
   }
 
 }
@@ -86,5 +92,36 @@ resource "aws_security_group" "taskoverflow" {
 
   tags = {
     Name = "taskoverflow_security_group"
+  }
+}
+
+resource "aws_lb" "taskoverflow" {
+  name = "taskoverflow"
+  internal = false
+  load_balancer_type = "application"
+  subnets = data.aws_subnets.private.ids
+  security_groups = [aws_security_group.taskoverflow_lb.id]
+}
+
+resource "aws_security_group" "taskoverflow_lb" {
+  name = "taskoverflow_lb"
+  description = "TaskOverflow Load Balancer Security Group"
+
+  ingress {
+    from_port = 80
+    to_port = 80
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "taskoverflow_lb_security_group"
   }
 }
